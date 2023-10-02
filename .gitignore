@@ -32,5 +32,6 @@
 *.app
 
 # Directories
+client/build/*
 server/build/*
 .vscode/*
