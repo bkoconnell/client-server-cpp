@@ -9,6 +9,30 @@ import logging
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 
+def parse_CL_args():
+    """Parses command-line arguments passed in."""
+    logging.debug("parse_CL_args() function.")
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-r", "--root",
+                        type=Path,
+                        default=('..'),
+                        help="""
+                        Optionally specify a root directory. Default='.'\n\n
+                        Usage: python3 lint_directory_names.py --root "./rel/path/dir_name"\n\n
+                        """)
+    parser.add_argument("-e", "--exclude",
+                        nargs='*',
+                        help="""
+                        An optional list of directory paths to exclude from lint check.\n\n
+                        Usage: python3 lint_directory_names.py 
+                        --exclude "rel/path/dir_1" "rel/path/dir_2\n\n"
+                        Note: The directory path is relative to the --root directory.\n\n
+                        """)
+    args = parser.parse_args()
+    return args
+
+
 def resolve_path(path):
     """Resolves a given path, directory, or filename. Exception thrown if invalid path."""
     logging.debug("resolve_path() function.")
@@ -40,30 +64,6 @@ def store_excluded_dirs(root, dirs):
         excluded = [os.path.join(root, dir) for dir in dirs]
     logging.info(f"--exclude:\t{excluded}")
     return excluded
-
-
-def parse_CL_args():
-    """Parses command-line arguments passed in."""
-    logging.debug("parse_CL_args() function.")
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-r", "--root",
-                        type=Path,
-                        default=('..'),
-                        help="""
-                        Optionally specify a root directory. Default='.'\n\n
-                        Usage: python3 lint_directory_names.py --root "./rel/path/dir_name"\n\n
-                        """)
-    parser.add_argument("-e", "--exclude",
-                        nargs='*',
-                        help="""
-                        An optional list of directory paths to exclude from lint check.\n\n
-                        Usage: python3 lint_directory_names.py 
-                        --exclude "rel/path/dir_1" "rel/path/dir_2\n\n"
-                        Note: The directory path is relative to the --root directory.\n\n
-                        """)
-    args = parser.parse_args()
-    return args
 
 
 def get_dirs_to_check(root_dir, excluded):
