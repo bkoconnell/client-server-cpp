@@ -6,7 +6,7 @@ from pathlib import Path
 import lint_directory_names as lint
 
 # Global variables
-rootdir = 'rootdir'
+rootdir = 'pipeline_scripts/tests/rootdir'
 
 class TestLintDirectoryNames(unittest.TestCase):
 
@@ -52,23 +52,23 @@ class TestLintDirectoryNames(unittest.TestCase):
         dirs = None
         self.assertIsNotNone(lint.store_excluded_dirs(rootdir, dirs))
 
-    # def test_get_dirs_to_check(self):
-    #     # Valid directories
-    #     dir1 = Path(rootdir).joinpath('dir1')
-    #     dir2 = Path(rootdir).joinpath('dir1').joinpath('subdir1')
-    #     dir3 = Path(rootdir).joinpath('dir1').joinpath('subdir1').joinpath('upperCase')
-    #     dir4 = Path(rootdir).joinpath('dir2')
-    #     dir5 = Path(rootdir).joinpath('dir2').joinpath('subdir2')
-    #     dir6 = Path(rootdir).joinpath('dir2').joinpath('subdir2').joinpath('a space')
-    #     dir7 = Path(rootdir).joinpath('dir3')
-    #     valid_dirs = [dir1, dir2, dir3, dir4, dir5, dir6, dir7]
-    #     # Excluded directories
-    #     exc1 = os.path.join(rootdir, 'dir3')
-    #     exc2 = os.path.join(rootdir, 'Case and Space')
-    #     exc3 = os.path.join(rootdir, '123')
-    #     excluded_dirs = [exc1, exc2, exc3]
+    def test_get_dirs_to_check(self):
+        # Valid directories
+        dir1 = Path(rootdir).joinpath('dir1')
+        dir2 = Path(rootdir).joinpath('dir1').joinpath('subdir1')
+        dir3 = Path(rootdir).joinpath('dir1').joinpath('subdir1').joinpath('upperCase')
+        dir4 = Path(rootdir).joinpath('dir2')
+        dir5 = Path(rootdir).joinpath('dir2').joinpath('subdir2')
+        dir6 = Path(rootdir).joinpath('dir2').joinpath('subdir2').joinpath('a space')
+        dir7 = Path(rootdir).joinpath('dir3')
+        valid_dirs = [dir1, dir2, dir3, dir4, dir5, dir6, dir7]
+        # Excluded directories
+        exc1 = os.path.join(rootdir, 'dir3', 'subdir3')
+        exc2 = os.path.join(rootdir, 'Case and Space')
+        exc3 = os.path.join(rootdir, '123')
+        excluded_dirs = [exc1, exc2, exc3]
 
-    #     self.assertListEqual(valid_dirs, lint.get_dirs_to_check(rootdir, excluded_dirs))
+        self.assertCountEqual(valid_dirs, lint.get_dirs_to_check(rootdir, excluded_dirs))
 
     @classmethod
     def tearDownClass(cls):

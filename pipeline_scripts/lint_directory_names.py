@@ -75,9 +75,9 @@ def get_dirs_to_check(root_dir, excluded):
 
     # Store paths for directories/sub-directories, except excluded ones
     for root, dirs, files in os.walk(root_dir):
-        dirs[:] = [Path(root).joinpath(dir) 
-                   for dir in dirs if join(root, dir) not in excluded]
-        valid_directories.extend(dirs)
+        dirs[:] = [dir for dir in dirs if join(root, dir) not in excluded]
+        path_dirs = [Path(root).joinpath(dir) for dir in dirs]
+        valid_directories.extend(path_dirs)
 
     return valid_directories
 
