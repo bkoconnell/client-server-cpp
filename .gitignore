@@ -32,6 +32,10 @@
 *.app
 
 # Directories
+build/*
 client/build/*
 server/build/*
 .vscode/*
+rootdir/*
+pipeline_scripts/rootdir*
+pipeline_scripts/tests/rootdir/*

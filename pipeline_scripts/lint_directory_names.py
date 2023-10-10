@@ -9,38 +9,6 @@ import logging
 logging.basicConfig(level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 
-def resolve_path(path):
-    """Resolves a given path, directory, or filename. Exception thrown if invalid path."""
-    logging.debug("resolve_path() function.")
-    try:
-        resolved_path = path.resolve(strict=True)
-    except FileNotFoundError as err:
-        msg = f"Invalid CL arg:  --root '{path}' is not a valid path."
-        logging.critical(f"{msg}\nFileNotFoundError: {err}")
-        sys.exit(2)
-    logging.info(f"--root:\t{resolved_path}")
-    return resolved_path
-
-
-def is_directory(dir):
-    """Checks that the given arg is a directory."""
-    logging.debug("is_directory() function.")
-    if not dir.is_dir():
-        msg = f"Invalid CL arg:  --root '{dir}' is not a directory."
-        logging.critical(f"{msg}")
-        sys.exit(2)
-
-
-def store_excluded_dirs(root, dirs):
-    """Store the CL args passed in for list of directories to be excluded from lint check."""
-    logging.debug("store_excluded_dirs() function.")
-    excluded = []
-    if dirs is not None:
-        excluded = [os.path.join(root, dir) for dir in dirs]
-    logging.info(f"--exclude:\t{excluded}")
-    return excluded
-
-
 def parse_CL_args():
     """Parses command-line arguments passed in."""
     logging.debug("parse_CL_args() function.")
@@ -65,6 +33,39 @@ def parse_CL_args():
     return args
 
 
+def resolve_path(path):
+    """Resolves a given path, directory, or filename. Exception thrown if invalid path."""
+    logging.debug("resolve_path() function.")
+    try:
+        resolved_path = path.resolve(strict=True)
+    except FileNotFoundError:
+        msg = f"Invalid CL arg:  --root '{path}' is not a valid path."
+        logging.critical(f"{msg}")
+        raise
+    logging.info(f"--root:\t{resolved_path}")
+    return resolved_path
+
+
+def is_directory(dir):
+    """Checks that the given arg is a directory."""
+    logging.debug("is_directory() function.")
+    if not dir.is_dir():
+        msg = f"Invalid CL arg:  --root '{dir}' is not a directory."
+        logging.critical(f"{msg}")
+        sys.exit(2)
+    return True
+
+
+def store_excluded_dirs(root, dirs):
+    """Store the CL args passed in for list of directories to be excluded from lint check."""
+    logging.debug("store_excluded_dirs() function.")
+    excluded = []
+    if dirs is not None:
+        excluded = [os.path.join(root, dir) for dir in dirs]
+    logging.info(f"--exclude:\t{excluded}")
+    return excluded
+
+
 def get_dirs_to_check(root_dir, excluded):
     """Generates a list of valid directories to be checked."""
     logging.debug("get_dirs_to_check() function.")
@@ -74,9 +75,9 @@ def get_dirs_to_check(root_dir, excluded):
 
     # Store paths for directories/sub-directories, except excluded ones
     for root, dirs, files in os.walk(root_dir):
-        dirs[:] = [Path(root).joinpath(dir) 
-                   for dir in dirs if join(root, dir) not in excluded]
-        valid_directories.extend(dirs)
+        dirs[:] = [dir for dir in dirs if join(root, dir) not in excluded]
+        path_dirs = [Path(root).joinpath(dir) for dir in dirs]
+        valid_directories.extend(path_dirs)
 
     return valid_directories
 
