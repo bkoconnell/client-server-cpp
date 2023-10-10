@@ -14,10 +14,10 @@ def resolve_path(path):
     logging.debug("resolve_path() function.")
     try:
         resolved_path = path.resolve(strict=True)
-    except FileNotFoundError as err:
+    except FileNotFoundError:
         msg = f"Invalid CL arg:  --root '{path}' is not a valid path."
-        logging.critical(f"{msg}\nFileNotFoundError: {err}")
-        sys.exit(2)
+        logging.critical(f"{msg}")
+        raise
     logging.info(f"--root:\t{resolved_path}")
     return resolved_path
 
@@ -29,6 +29,7 @@ def is_directory(dir):
         msg = f"Invalid CL arg:  --root '{dir}' is not a directory."
         logging.critical(f"{msg}")
         sys.exit(2)
+    return True
 
 
 def store_excluded_dirs(root, dirs):
