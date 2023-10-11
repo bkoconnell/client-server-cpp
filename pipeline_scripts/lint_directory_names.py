@@ -16,7 +16,7 @@ def parse_CL_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("-r", "--root",
                         type=Path,
-                        default=('..'),
+                        default=('.'),
                         help="""
                         Optionally specify a root directory. Default='.'\n\n
                         Usage: python3 lint_directory_names.py --root "./rel/path/dir_name"\n\n
@@ -94,16 +94,16 @@ def validate_dirs_space(dirs: list) -> list:
     return dirs_with_space
 
 
-def evaluate_failures(root: str, failed_dirs: list) -> bool:
+def evaluate_failures(root: str, failed_dirs: list, failure: str) -> bool:
     """Outputs the relative path of directories that failed the lint check."""
     logging.debug("evaluate_failures()")
+    logging.info(f"The following directories failed lint test due to {failure}:")
     for dir in failed_dirs:
         path = Path()
         root_idx = dir.parts.index(root)
         for part in dir.parts[root_idx+1:]:
             path = os.path.join(path, part)
-        print(f'\t\t\t\t{path}')
-    print('\n')
+        logging.info(f'\t\t{path}')
     return True
 
 
@@ -127,16 +127,16 @@ def main():
         logging.info("All directories adhere to the 'lowercase' naming convention.")
         case_failed = False
     else:
-        logging.info("The following directories failed lint test due to uppercase letters:\n")
-        case_failed = evaluate_failures(root.stem, case_failures)
+        failure = 'uppercase letters'
+        case_failed = evaluate_failures(root.stem, case_failures, failure)
 
     # Evaluate any failures for Spaces
     if not space_failures:
         logging.info("All directories adhere to the 'no spaces' naming convention.")
         space_failed = False
     else:
-        logging.info("The following directories failed lint test due to spaces in the name:\n")
-        space_failed = evaluate_failures(root.stem, space_failures)
+        failure = 'spaces in the name'
+        space_failed = evaluate_failures(root.stem, space_failures, failure)
 
     # End script with failures
     if case_failed or space_failed:

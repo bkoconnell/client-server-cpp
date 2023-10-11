@@ -35,7 +35,7 @@ class TestLintDirectoryNames(unittest.TestCase):
         path = Path(rootdir).joinpath('dir1')
         exp = path.is_dir()
         act = lint.is_directory(path)
-        self.assertEquals(exp, act)
+        self.assertEqual(exp, act)
 
     def test_is_directory_sysexit(self):
         with self.assertRaises(SystemExit) as cm:
@@ -125,7 +125,8 @@ class TestLintDirectoryNames(unittest.TestCase):
         path2 = Path(rootdir).joinpath('dir3').joinpath('subdir3').joinpath(' space')
         dirs = [path1, path2]
         root = Path(rootdir).stem
-        self.assertTrue(lint.evaluate_failures(root, dirs))
+        failure = 'spaces'
+        self.assertTrue(lint.evaluate_failures(root, dirs, failure))
 
     def test_case_failed(self):
         with self.assertRaises(SystemExit) as cm:

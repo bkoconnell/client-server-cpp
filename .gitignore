@@ -41,4 +41,4 @@ pipeline_scripts/rootdir*
 pipeline_scripts/tests/rootdir/*
 __pycache__/
 pipeline_scripts/__pycache__/
-pipeline_scripts/__pycache__/tests
+pipeline_scripts/tests/__pycache__/
