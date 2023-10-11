@@ -39,3 +39,6 @@ server/build/*
 rootdir/*
 pipeline_scripts/rootdir*
 pipeline_scripts/tests/rootdir/*
+__pycache__/
+pipeline_scripts/__pycache__/
+pipeline_scripts/__pycache__/tests
