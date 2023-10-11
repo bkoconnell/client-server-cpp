@@ -108,6 +108,16 @@ class TestLintDirectoryNames(unittest.TestCase):
         act = lint.validate_dirs_case([path1, path2, path3])
         self.assertEqual(exp, act)
 
+    def test_validate_dirs_space(self):
+        path1 = Path(rootdir).joinpath('dir1').joinpath('subdir1').joinpath('upperCase')
+        path2 = Path(rootdir).joinpath('dir2').joinpath('subdir2').joinpath('a space')
+        path3 = Path(rootdir).joinpath('dir3').joinpath('subdir3').joinpath(' space')
+        path4 = Path(rootdir).joinpath('dir3').joinpath('subdir3').joinpath('space ')
+        path5 = Path(rootdir).joinpath('Case and Space')
+        exp = [path2, path3, path4, path5]
+        act = lint.validate_dirs_space([path1, path2, path3, path4, path5])
+        self.assertEqual(exp, act)
+
 
     @classmethod
     def tearDownClass(cls):
