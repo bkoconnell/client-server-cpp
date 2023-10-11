@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, sys, os
+import argparse, sys, os, re
 from pathlib import Path
 import logging
 
@@ -82,7 +82,8 @@ def get_dirs_to_check(root_dir: Path, excluded: list) -> list:
 def validate_dirs_case(dirs: list) -> list:
     """Identifies directories with uppercase letters in the name."""
     logging.debug("validate_dirs_case()")
-    dirs_with_upper = [dir for dir in dirs if not dir.stem.islower()]
+    reg = re.compile('[A-Z]')
+    dirs_with_upper = [dir for dir in dirs if reg.search(dir.stem) is not None]
     return dirs_with_upper
 
 
