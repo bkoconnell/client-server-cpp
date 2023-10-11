@@ -1,7 +1,11 @@
 #!/usr/bin/env python3
 import unittest, shutil, os, sys
+import logging
 from pathlib import Path
 import lint_directory_names as lint
+
+# Setup logger
+logging.basicConfig(level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
 
 # Global variables
 rootdir = 'pipeline_scripts/tests/rootdir'
@@ -10,6 +14,7 @@ class TestLintDirectoryNames(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
+        logging.info('Setting up TestLintDirectoryNames...')
         Path(rootdir).joinpath('dir1').joinpath('subdir1').joinpath('upperCase').mkdir(parents=True, exist_ok=True)
         Path(rootdir).joinpath('dir2').joinpath('subdir2').joinpath('a space').mkdir(parents=True, exist_ok=True)
         Path(rootdir).joinpath('dir3').joinpath('subdir3').joinpath(' space').mkdir(parents=True, exist_ok=True)
@@ -157,9 +162,9 @@ class TestLintDirectoryNames(unittest.TestCase):
         except SystemExit:
             self.fail(f'{msg}')
 
-
     @classmethod
     def tearDownClass(cls):
+        logging.info('Tearing down TestLintDirectoryNames...')
         shutil.rmtree(rootdir)
 
 
