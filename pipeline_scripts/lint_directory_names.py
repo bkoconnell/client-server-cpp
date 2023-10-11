@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-import argparse, sys, os
+import argparse, sys, os, re
 from pathlib import Path
 import logging
 
@@ -33,7 +33,7 @@ def parse_CL_args():
     return args
 
 
-def resolve_path(path):
+def resolve_path(path: Path) -> Path:
     """Resolves a given path, directory, or filename. Exception thrown if invalid path."""
     logging.debug("resolve_path() function.")
     try:
@@ -46,7 +46,7 @@ def resolve_path(path):
     return resolved_path
 
 
-def is_directory(dir):
+def is_directory(dir: Path) -> bool:
     """Checks that the given arg is a directory."""
     logging.debug("is_directory() function.")
     if not dir.is_dir():
@@ -56,7 +56,7 @@ def is_directory(dir):
     return True
 
 
-def store_excluded_dirs(root, dirs):
+def store_excluded_dirs(root: Path, dirs: list) -> list:
     """Store the CL args passed in for list of directories to be excluded from lint check."""
     logging.debug("store_excluded_dirs() function.")
     excluded = []
@@ -66,42 +66,37 @@ def store_excluded_dirs(root, dirs):
     return excluded
 
 
-def get_dirs_to_check(root_dir, excluded):
+def get_dirs_to_check(root_dir: Path, excluded: list) -> list:
     """Generates a list of valid directories to be checked."""
     logging.debug("get_dirs_to_check() function.")
-
     join = os.path.join
     valid_directories = []
-
     # Store paths for directories/sub-directories, except excluded ones
     for root, dirs, files in os.walk(root_dir):
         dirs[:] = [dir for dir in dirs if join(root, dir) not in excluded]
         path_dirs = [Path(root).joinpath(dir) for dir in dirs]
         valid_directories.extend(path_dirs)
-
     return valid_directories
 
 
-def validate_dir_names(dirs):
-    """Identifies any directories with uppercase letters or spaces."""
-    logging.debug("validate_dir_names()")
-    dirs_failed_lower = []
-    dirs_failed_spaces = []
-
-    for dir in dirs:
-        # Check for any uppercase letters in the name
-        if not dir.stem.islower():
-            dirs_failed_lower.append(dir)
-        # Check for any spaces in the name
-        if ' ' in dir.stem:
-            dirs_failed_spaces.append(dir)
-    
-    return dirs_failed_lower, dirs_failed_spaces
+def validate_dirs_case(dirs: list) -> list:
+    """Identifies directories with uppercase letters in the name."""
+    logging.debug("validate_dirs_case()")
+    reg = re.compile('[A-Z]')
+    dirs_with_upper = [dir for dir in dirs if reg.search(dir.stem) is not None]
+    return dirs_with_upper
 
 
-def evaluate_failures(root, failed_dirs):
+def validate_dirs_space(dirs: list) -> list:
+    """Identifies directories with spaces in the name."""
+    logging.debug("validate_dirs_space()")
+    dirs_with_space = [dir for dir in dirs if ' ' in dir.stem]
+    return dirs_with_space
+
+
+def evaluate_failures(root: str, failed_dirs: list) -> bool:
     """Outputs the relative path of directories that failed the lint check."""
-
+    logging.debug("evaluate_failures()")
     for dir in failed_dirs:
         path = Path()
         root_idx = dir.parts.index(root)
@@ -109,6 +104,7 @@ def evaluate_failures(root, failed_dirs):
             path = os.path.join(path, part)
         print(f'\t\t\t\t{path}')
     print('\n')
+    return True
 
 
 def main():
@@ -123,32 +119,28 @@ def main():
     valid_dirs = get_dirs_to_check(root, excluded_dirs)
 
     # Check if directories conform to Lint requirements
-    lower, spaces = validate_dir_names(valid_dirs)
+    case_failures = validate_dirs_case(valid_dirs)
+    space_failures = validate_dirs_space(valid_dirs)
 
     # Evaluate any failures for Uppercase letters
-    if not lower:
-        lowercase_failed = False
+    if not case_failures:
         logging.info("All directories adhere to the 'lowercase' naming convention.")
+        case_failed = False
     else:
-        lowercase_failed = True
-        msg = "The following directories failed lint test due to uppercase letters:\n"
-        logging.info(msg)
-        evaluate_failures(root.stem, lower)
-    # Evaluate any failures for Spaces
-    if not spaces:
-        spaces_failed = False
-        logging.info("All directories adhere to the 'no spaces' naming convention.")
-    else:
-        spaces_failed = True
-        msg = "The following directories failed lint test due to spaces in the name:\n"
-        logging.info(msg)
-        evaluate_failures(root.stem, spaces)
+        logging.info("The following directories failed lint test due to uppercase letters:\n")
+        case_failed = evaluate_failures(root.stem, case_failures)
 
-    # End script
-    if lowercase_failed or spaces_failed:
-        sys.exit(1)
+    # Evaluate any failures for Spaces
+    if not space_failures:
+        logging.info("All directories adhere to the 'no spaces' naming convention.")
+        space_failed = False
     else:
-        sys.exit(0)
+        logging.info("The following directories failed lint test due to spaces in the name:\n")
+        space_failed = evaluate_failures(root.stem, space_failures)
+
+    # End script with failures
+    if case_failed or space_failed:
+        sys.exit(1)
 
 
 # Entry Point
