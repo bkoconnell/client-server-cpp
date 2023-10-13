@@ -27,7 +27,7 @@ logger.addHandler(logfile_handler)
 
 
 # TODO: CL arg for --log=INFO (store in a variable called "loglevel")
-#       getattr(logging, loglevel.upper())
+#       
 
 
 def parse_CL_args():
@@ -50,7 +50,21 @@ def parse_CL_args():
                         --exclude "rel/path/dir_1" "rel/path/dir_2\n\n"
                         Note: The directory path is relative to the --root directory.\n\n
                         """)
+    parser.add_argument("-l", "--loglevel",
+                        default='INFO',
+                        choices=['DEBUG', 'debug'],
+                        help="""
+                        An optional flag for the logfile's logging level.
+                        To override the default(INFO), use DEBUG
+                        Usage: python3 lint_directory_names.py --loglevel DEBUG
+                        """
+                        )
     args = parser.parse_args()
+    # Check if loglevel should be set to DEBUG for the logfile
+    loglevel = args.loglevel.upper()
+    if loglevel == 'DEBUG':
+        logfile_handler.setLevel(logging.DEBUG)
+        logfile_handler.setFormatter(debug_format)
     return args
 
 
