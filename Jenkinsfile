@@ -29,7 +29,8 @@ node {
     stage('Build-Server') {
         sh '''
         cd server/
-        ./build.sh
+        bash -x build.sh
         '''
+        archiveArtifacts artifacts: 'server/build/src/main', followSymlinks: false, fingerprint: true
     }
 }

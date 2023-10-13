@@ -6,12 +6,33 @@ import logging
 # TODO: Docstring for Script.
 
 # Setup logger
-logging.basicConfig(level=logging.INFO, format=' %(asctime)s - %(levelname)s - %(message)s')
+logger = logging.getLogger('logger')
+logger.setLevel(logging.DEBUG)
+std_format = logging.Formatter(' %(asctime)s - %(levelname)s:  %(message)s')
+debug_format = logging.Formatter(' %(asctime)s - %(module)s - %(lineno)d - %(funcName)s - %(levelname)s:  %(message)s')
+# Handler for logging console output
+console_handler = logging.StreamHandler(sys.stderr)
+console_handler.setLevel(logging.WARNING)
+console_handler.setFormatter(std_format)
+logger.addHandler(console_handler)
+# Handler for writing to logfile
+logfilepath = 'pipeline_scripts/tmp/'
+logfilename = 'lint_directory_names.log'
+logfile = os.path.join(logfilepath, logfilename)
+os.makedirs(logfilepath, exist_ok=True)
+logfile_handler = logging.FileHandler(logfile, 'w', encoding='utf-8')
+logfile_handler.setLevel(logging.INFO)
+logfile_handler.setFormatter(std_format)
+logger.addHandler(logfile_handler)
+
+
+# TODO: CL arg for --log=INFO (store in a variable called "loglevel")
+#       getattr(logging, loglevel.upper())
 
 
 def parse_CL_args():
     """Parses command-line arguments passed in."""
-    logging.debug("parse_CL_args() function.")
+    logger.info("Parsing command-line args...")
 
     parser = argparse.ArgumentParser()
     parser.add_argument("-r", "--root",
@@ -35,40 +56,40 @@ def parse_CL_args():
 
 def resolve_path(path: Path) -> Path:
     """Resolves a given path, directory, or filename. Exception thrown if invalid path."""
-    logging.debug("resolve_path() function.")
+    logger.debug(f"Calling resolve_path({path})")
     try:
         resolved_path = path.resolve(strict=True)
     except FileNotFoundError:
         msg = f"Invalid CL arg:  --root '{path}' is not a valid path."
-        logging.critical(f"{msg}")
+        logger.critical(f"{msg}")
         raise
-    logging.info(f"--root:\t{resolved_path}")
+    logger.info(f"--root:\t{resolved_path}")
     return resolved_path
 
 
 def is_directory(dir: Path) -> bool:
     """Checks that the given arg is a directory."""
-    logging.debug("is_directory() function.")
+    logger.debug(f"Calling is_directory({dir})")
     if not dir.is_dir():
         msg = f"Invalid CL arg:  --root '{dir}' is not a directory."
-        logging.critical(f"{msg}")
+        logger.critical(f"{msg}")
         sys.exit(2)
     return True
 
 
 def store_excluded_dirs(root: Path, dirs: list) -> list:
     """Store the CL args passed in for list of directories to be excluded from lint check."""
-    logging.debug("store_excluded_dirs() function.")
+    logger.debug(f"Calling store_excluded_dirs({root}, {dirs})")
     excluded = []
     if dirs is not None:
         excluded = [os.path.join(root, dir) for dir in dirs]
-    logging.info(f"--exclude:\t{excluded}")
+    logger.info(f"--exclude:\t{excluded}")
     return excluded
 
 
 def get_dirs_to_check(root_dir: Path, excluded: list) -> list:
     """Generates a list of valid directories to be checked."""
-    logging.debug("get_dirs_to_check() function.")
+    logger.debug(f"Calling get_dirs_to_check({root_dir}, {excluded})")
     join = os.path.join
     valid_directories = []
     # Store paths for directories/sub-directories, except excluded ones
@@ -81,7 +102,7 @@ def get_dirs_to_check(root_dir: Path, excluded: list) -> list:
 
 def validate_dirs_case(dirs: list) -> list:
     """Identifies directories with uppercase letters in the name."""
-    logging.debug("validate_dirs_case()")
+    logger.debug(f"Calling validate_dirs_case({dirs})")
     reg = re.compile('[A-Z]')
     dirs_with_upper = [dir for dir in dirs if reg.search(dir.stem) is not None]
     return dirs_with_upper
@@ -89,21 +110,21 @@ def validate_dirs_case(dirs: list) -> list:
 
 def validate_dirs_space(dirs: list) -> list:
     """Identifies directories with spaces in the name."""
-    logging.debug("validate_dirs_space()")
+    logger.debug(f"Calling validate_dirs_space({dirs})")
     dirs_with_space = [dir for dir in dirs if ' ' in dir.stem]
     return dirs_with_space
 
 
 def evaluate_failures(root: str, failed_dirs: list, failure: str) -> bool:
     """Outputs the relative path of directories that failed the lint check."""
-    logging.debug("evaluate_failures()")
-    logging.info(f"The following directories failed lint test due to {failure}:")
+    logger.debug(f"Calling evaluate_failures({root}, {failed_dirs}, {failure})")
+    logger.warning(f"The following directories failed lint test due to {failure}:")
     for dir in failed_dirs:
         path = Path()
         root_idx = dir.parts.index(root)
         for part in dir.parts[root_idx+1:]:
             path = os.path.join(path, part)
-        logging.info(f'\t\t{path}')
+        logger.warning(f'\t\t{path}')
     return True
 
 
@@ -124,7 +145,7 @@ def main():
 
     # Evaluate any failures for Uppercase letters
     if not case_failures:
-        logging.info("All directories adhere to the 'lowercase' naming convention.")
+        logger.info("All directories adhere to the 'lowercase' naming convention.")
         case_failed = False
     else:
         failure = 'uppercase letters'
@@ -132,7 +153,7 @@ def main():
 
     # Evaluate any failures for Spaces
     if not space_failures:
-        logging.info("All directories adhere to the 'no spaces' naming convention.")
+        logger.info("All directories adhere to the 'no spaces' naming convention.")
         space_failed = False
     else:
         failure = 'spaces in the name'
@@ -140,10 +161,16 @@ def main():
 
     # End script with failures
     if case_failed or space_failed:
+        logger.warning(f'''
+                      Lint check for directory naming convention has failed.\n
+                      Please see the log file saved to Jenkins artifacts, or here:\n
+                      {Path(logfile).resolve()}
+                      ''')
         sys.exit(1)
+    logger.info("Lint check for directory naming convention has passed.")
 
 
 # Entry Point
 if __name__ == "__main__":
-    logging.debug("Start of program.")
+    logger.debug("Starting 'lint_directory_names' script.")
     main()
