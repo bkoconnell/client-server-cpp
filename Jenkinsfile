@@ -19,6 +19,7 @@ node {
     stage('Lint-Directory-Names') {
         sh 'python3 --version'
         sh 'python3 pipeline_scripts/lint_directory_names.py --root . --exclude .git .vscode server/build client/build pipeline_scripts/__pycache__ pipeline_scripts/tests'
+        archiveArtifacts artifacts: 'pipeline_scripts/tmp/lint_directory_names.log', followSymlinks: false
     }
     
     /* ***** */
