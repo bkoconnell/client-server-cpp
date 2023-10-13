@@ -25,10 +25,7 @@ logfile_handler.setLevel(logging.INFO)
 logfile_handler.setFormatter(std_format)
 logger.addHandler(logfile_handler)
 
-
-# TODO: CL arg for --log=INFO (store in a variable called "loglevel")
-#       
-
+# -------------------------------------------------
 
 def parse_CL_args():
     """Parses command-line arguments passed in."""

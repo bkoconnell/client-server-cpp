@@ -1,4 +1,9 @@
 node {
+
+    environment {
+        NEXUS_LOGIN = 'nexuslogin'
+    }
+
     checkout scm
 
     /* ***************** */
@@ -33,5 +38,27 @@ node {
         bash -x build.sh
         '''
         archiveArtifacts artifacts: 'server/build/src/main', followSymlinks: false, fingerprint: true
+    }
+
+    /* ******* */
+    /* DELIVER */
+    /* ******* */
+
+    // Upload build-server executable to Nexus repo
+    stage('Deliver-Server-Build') {
+        nexusArtifactUploader(
+            credentialsId: 'nexuscredentials',
+            groupId: 'server-build-gcc',
+            nexusUrl: 'localhost:8081',
+            nexusVersion: 'nexus3',
+            protocol: 'http',
+            repository: 'client-server-cpp',
+            version: 'v0.1',
+            artifacts: [
+                [artifactId: 'main',
+                classifier: 'latest',
+                file: 'server/build/src/main',
+                type: '']]
+        )
     }
 }
