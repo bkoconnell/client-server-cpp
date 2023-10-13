@@ -2,9 +2,14 @@
 import unittest, shutil, os, sys
 from pathlib import Path
 import lint_directory_names as lint
+import logging
 
 # Global variables
 rootdir = 'pipeline_scripts/tests/rootdir'
+
+# Disable logging
+logging.disable(logging.CRITICAL)
+
 
 class TestLintDirectoryNames(unittest.TestCase):
 
